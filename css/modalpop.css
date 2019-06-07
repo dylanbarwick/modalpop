@@ -1,0 +1,149 @@
+#modalpop-overlay {
+  width: 100%;
+  height: 100%;
+  opacity: 0.4;
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  background-color: #000000;
+  display: none;
+  z-index: 900;
+}
+
+.modalpop-container {
+  background-color: #f9f9f9;
+  color: #000000;
+  padding: 1em;
+  position: fixed;
+  top: 30%;
+  left: 30%;
+  width: 530px;
+  display: none;
+  z-index:1000
+}
+
+.modalpop-content-container {
+  float: left;
+  width: 70%;
+  margin-right: 10px;
+}
+
+.modalpop-buttons-container {
+  border: 0px #999999 solid;
+  padding: 5px;
+  margin-left: 73%
+}
+
+.modalpop-button a:link, 
+.modalpop-button a:hover, 
+.modalpop-button a:active, 
+.modalpop-button a:visited {
+  color: #000000;
+  padding: 3px 8px;
+  background-color: #cccccc;
+  cursor: pointer;
+  text-decoration: none;
+  margin-bottom: 8px;
+  display: block;
+  border-radius: 5px;
+  box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.5);
+}
+
+.modalpop-button a:hover {
+  background-color: #333333;
+  color: #ffffff;
+}
+
+
+.pop_title a {
+  font-style: italic;
+  font-weight: bold;
+  font-size: 1.5em;
+}
+
+.pop_m {
+	border: 1px #333333 solid;
+	background-color: #ffffff;
+	padding: 3px;
+	margin-top: 1em;
+}
+
+.month_header {
+	font-weight: bold;
+	color: #999999;
+	font-size: 1.5em;
+}
+
+.m_total {
+	width: 100%;
+	height: 1.5em;
+	border: 1px #999999 solid;
+	border-width: 0px 0px 0px 0px;
+}
+
+.m_total .option_1, 
+.boxodays .day_bar.option_1 {
+  background-color: #cc6666;
+}
+.m_total .option_2, 
+.boxodays .day_bar.option_2 {
+  background-color: #66cc66;
+}
+.m_total .option_3, 
+.boxodays .day_bar.option_3 {
+  background-color: #9999ff;
+}
+
+.pop_d {
+	border: 0px #999999 solid;
+	border-width: 0px 0px 1px 0px;
+	background-color: #ffffff;
+	padding: 0px;
+	margin: 0px 0px 0.3em 0px;
+}
+
+.day_header {
+	font-weight: bold;
+	width: 40%;
+	float: left;
+	margin: 0px 15px 3px 0px;
+}
+
+.day_bar {
+  float: left;
+	display: inline;
+}
+
+.d_total {
+	width: 100%;
+	height: 1.5em;
+	border: 1px #999999 dotted;
+	border-width: 0px 0px 0px 0px;
+	clear: both;
+}
+
+.label {
+	float: left;
+	width: 40%;
+	clear: both;
+	margin-right: 10px;
+	padding-left: 5px;
+}
+
+.data {
+  width: 50%;
+	float: left;
+	display: inline;
+	background-color: #cccccc; 
+  overflow: visible;
+  white-space: nowrap;
+}
+
+.boxodays {
+  display: none;
+}
+
+
+
+
+

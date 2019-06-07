@@ -1,0 +1,498 @@
+<?php
+/**
+ * @file
+ * A node module that allows you to create and display modal pop-ups.
+ */
+
+
+
+
+/**
+ * Implements hook_node_info().
+ */
+function modalpop_node_info() {
+  return array(
+    'modalpop' => array(
+      'name' => t('Modal pop-up'), 
+      'base' => 'modalpop', 
+      'description' => t('Create modal pop-ups to advertise stuff.'), 
+      'has_title' => TRUE, 
+      'title_label' => t('Pop-up title'), 
+    ), 
+  );
+}
+
+/**
+ * Implements hook_form() with the standard default form.
+ */
+function modalpop_form($node, $form_state) {
+  //dpm($form_state);
+  return node_content_form($node, $form_state);
+}
+
+
+/**
+ * Implements hook_form_FORM_ID_alter() with the standard default form.
+ */
+function modalpop_form_modalpop_node_form_alter(&$form, &$form_state, $form_id) {
+  //add a description to the title field
+  $form['title']['#description'] = t('To prevent this title from being displayed on the popup, insert `!` at the start.');
+  
+  $options = array();
+  for ($a = 0; $a <= 100; $a += 10) {
+    $options[$a] = $a;
+  }
+  $default_expiry = variable_get('modalpop_cookie_expiry', 30);
+  $default_opacity = variable_get('modalpop_overlay_opacity', 50);
+  $form['pop_overlay_opacity']['und']['#options'] = $options;
+  $form['pop_overlay_opacity']['und']['#default_value'] = $form_state['field']['pop_overlay_opacity']['und']['instance']['default_value'][0]['value'];
+  
+  if (!$form['nid']['#value']) {
+    $form['pop_butt1_expiry']['und'][0]['value']['#default_value'] = $default_expiry;
+    $form['pop_butt2_expiry']['und'][0]['value']['#default_value'] = $default_expiry;
+    $form['pop_butt3_expiry']['und'][0]['value']['#default_value'] = $default_expiry;
+    $form['pop_overlay_opacity']['und']['#default_value'] = $default_opacity;
+  }
+  
+}
+
+
+
+function modalpop_validate($form, &$form_state) {
+  $popstart = strtotime($form->popstart['und'][0]['value']);
+}
+
+
+/**
+ * Implements hook_menu().
+ */
+function modalpop_menu() {
+  $items = array();
+
+  $items['admin/config/media/modalpop'] = array(
+    'title' => 'Popup settings',
+    'description' => 'Set the default behaviours of the popups.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('modalpop_admin_settings'),
+    'access arguments' => array('administer modalpop settings'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  
+  $items['modalpopstore'] = array(
+    'title' => 'Pop-up click capture',
+    'access arguments' => array('access popup click_capture'), 
+    'page callback' => 'modalpop_click_capture', 
+    'type' => MENU_CALLBACK,
+  );
+  
+  $items['admin/reports/modalpopanalysis'] = array(
+    'title' => 'Pop-up traffic analysis',
+    'access arguments' => array('administer modalpop settings'), 
+    'page callback' => 'modalpop_analysis', 
+  );
+  
+  return $items;
+}
+
+/**
+ * Implements hook_permission().
+ */
+function modalpop_permission() {
+  return array(
+    'administer popup settings' => array(
+      'title' => t('Access the config page for modal pop-ups.'),
+    ), 
+    'be subjected to popups' => array(
+      'title' => t('Subject this role to popups.'),
+    ), 
+    'access popup click_capture' => array(
+      'title' => t('View pop-ups and allow the system to record your click.'),
+    ), 
+  );
+}
+
+/**
+ * Page callback: Current posts settings
+ *
+ * @see modalpop_menu()
+ */
+function modalpop_admin_settings($form, &$form_state) {
+  $form['modalpop_cookie_expiry'] = array(
+    '#type' => 'textfield', 
+    '#title' => t('When should this cookie be deleted'), 
+    '#default_value' => variable_get('modalpop_cookie_expiry', 30), 
+    '#description' => t('Either enter the number of days before the cookie is deleted (starting from when it was set) or enter a specific date in the format `YYYY-MM-DD`, eg  for September 23rd 2008 you should enter `2008-09-23`.'), 
+    '#required' => TRUE, 
+  );
+
+  $form['modalpop_overlay_opacity'] = array(
+    '#type' => 'select', 
+    '#title' => t('How opaque should the overlay be?'), 
+    '#default_value' => variable_get('modalpop_overlay_opacity', 50), 
+    '#description' => t('Please select a percentage value. `0` means invisible, `50` means semi-transparent and `100` means solid.'), 
+    '#options' => array(0 => 0, 10 => 10, 20 => 20, 30 => 30, 40 => 40, 50 => 50, 60 => 60, 70 => 70, 80 => 80, 90 => 90, 100 => 100), 
+    '#required' => TRUE, 
+  );
+
+  return system_settings_form($form);
+}
+
+
+/**
+ * Implements hook_theme().
+ */
+function modalpop_theme() {
+  return array(
+    'modalpopup' => array(
+      'template' => 'modalpopup', 
+      'variables' => array('node' => NULL), 
+    ), 
+  );
+}
+
+
+
+
+function modalpop_page_alter(&$page) {
+  global $user;
+  global $base_path;
+  $match = 0;
+  if (user_access('be subjected to popups')) {
+    //Recorded format for popstart and popstop
+    //2013-04-10T05:00:00
+    $now = date('Y-m-d\TH:i:s');
+    $query = db_select('node', 'n');
+    $query->join('field_data_body', 'n1', 'n.nid = n1.entity_id');
+    $query->join('field_data_popstart', 'p1', 'n.nid = p1.entity_id');
+    $query->join('field_data_popstop', 'p2', 'n.nid = p2.entity_id');
+    $query->join('field_data_pop_whichpage_text', 'p3', 'n.nid = p3.entity_id');
+    $query->fields('n', array('nid', 'title'))
+          ->fields('n1', array('body_value'))
+          ->fields('p1', array('popstart_value'))
+          ->fields('p2', array('popstop_value'))
+          ->fields('p3', array('pop_whichpage_text_value'))
+          ->condition('n.type', 'modalpop', '=') 
+          ->condition('p1.popstart_value', $now, '<') 
+          ->condition('p2.popstop_value', $now, '>') 
+          ->orderBy('p1.popstart_value', 'DESC'); //Most recent first.
+    
+    //$query = db_select('node', 'n');
+    //$query->fields('n', array('nid', 'title'));
+    
+    $result = $query->execute();
+    $results = $result->fetchAll();
+    $modalpop_info = '';
+    
+    //step through each result looking for a popup that belongs on this page
+    foreach ($results AS $key => $row) {
+      $modalpop_info = $row;
+      $whichpage = explode("\r\n", $row->pop_whichpage_text_value);
+      if (count($whichpage) > 0) {
+        foreach ($whichpage AS $key => $path) {
+          trim($path);
+          //special case for `<front>`
+          if ($path != '<front>') {
+            if (substr($path, 0, 1) == '/') {
+              $path = substr($base_path, 1) . substr($path, 1);
+            }
+            else {
+              $path = '*' . $path;
+            }
+          }
+          
+          $path2 = "/^\/".str_replace(array("/", "*"), array("\/", ".*"), $path).'$/i';
+          $match = preg_match($path2, $_SERVER['REQUEST_URI']);
+          //as soon as we find a match (`<front>` is a special case and so is hardcoded) we break out of the while loop
+          //this means that only one pop-up appears per page
+          if ($match == 1 || (drupal_is_front_page() == 1 && $path == "<front>")) {
+            $match = 1;
+            break 2;
+          }
+
+        }
+      }
+    }
+    
+    if ($match && $modalpop_info) {
+      $mpnode = node_load($modalpop_info->nid);
+      
+      
+      $modalpop_settings = array(
+        'mpnid' => $mpnode->nid,
+        'overlay_opacity' => $mpnode->pop_overlay_opacity['und'][0]['value'], 
+        'uid' => $user->uid, 
+        'time' => time(), 
+        
+      );
+      drupal_add_js(array('modalpop' => $modalpop_settings), 'setting');
+      
+      
+      $mpnode_view = theme('modalpopup', array('node' => $mpnode));
+      $page['footer']['modalpop_content']['#markup'] = "<div id='modalpop-overlay'></div>\n";
+      $page['footer']['modalpop_content']['#markup'] .= "<div class='modalpop-container' id='mpc" . $mpnode->nid . "'>" . $mpnode_view . "</div>\n";
+      //dpm($page);
+    }
+    
+  }
+  
+}
+
+
+
+
+/**
+ * Page callback: Full list of popups and an optional breakdown of clicks
+ *
+ * @see modalpop_menu()
+ */
+function modalpop_analysis($nid = NULL) {
+  //get the css
+	drupal_add_css(drupal_get_path('module', 'modalpop') .'/css/modalpop.css');
+	//get the collapse library
+	drupal_add_library('system', 'drupal.collapse');
+	drupal_add_js('misc/form.js'); // don't know if its really required to collapsible fieldsets to work
+  drupal_add_js('misc/collapse.js'); 
+	
+	
+	
+	$fs_title = "Current and expired pop-ups\n";
+	
+	$query = db_select('node', 'n');
+  $query->fields('n', array('nid', 'title'))
+    ->condition('n.type', 'modalpop') //is a modalpop.
+    ->orderBy('n.created', 'DESC'); //Most recent first.
+  
+  $result = $query->execute();
+  
+  $poplist = array();
+  
+  foreach ($result AS $modalpop) {
+    $poplist[] = l($modalpop->title, 'admin/reports/modalpopanalysis/'. $modalpop->nid) . "<br/>\n";
+  }
+  $fs_body = ' ' . implode('<br/>', $poplist);
+  $popcontent = '';
+  
+  
+  
+  
+	//if someone's clicked on a current or past popup to get here (see above)
+  if (isset($nid)) {
+    
+    $fieldset = array(
+      '#title' => $fs_title, 
+      '#children' => $fs_body, 
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE, 
+      );
+    $popcontent .= theme('fieldset', array('element' => $fieldset));
+    
+    $node = node_load($nid);
+    
+    $query = db_select('modalpop_log', 'pl')
+      ->fields('pl')
+      ->condition('pl.nid', $nid, '=')
+      ->condition('pl.whichbutt', 0, '<>')
+      ->orderBy('pl.whichdate', 'ASC');
+    $result = $query->execute();
+    
+    foreach($result AS $row) {
+      $row->month = date("m", $row->whichdate);
+      $row->week = date("W", $row->whichdate);
+      $row->day = date("z", $row->whichdate);
+      $data[] = $row;
+    }
+    
+    $allbutts = array();
+    $node->pop_butt1_label['und'][0]['value'] ? $allbutts['1: '.$node->pop_butt1_label['und'][0]['value']] = 0 : $allbutts;
+    $node->pop_butt2_label['und'][0]['value'] ? $allbutts['2: '.$node->pop_butt2_label['und'][0]['value']] = 0 : $allbutts;
+    $node->pop_butt3_label['und'][0]['value'] ? $allbutts['3: '.$node->pop_butt3_label['und'][0]['value']] = 0 : $allbutts;
+    
+    $total = $allbutts;
+    $prevmonth = 0;
+    $prevweek = 0;
+    $prevday = 0;
+    
+    //a quick snippet of code to hide and show the day breakdown
+    /*
+    $popcontent .= "<script type='text/javascript'>$(document).ready(function(){
+       $('.boxodays').hide();
+       $('a.bodswitch').click(function(){
+         $(this).next().slideToggle();
+       });
+    });</script>" ;
+    */
+    
+    
+    if (count($data) > 0) {
+      foreach ($data as $key => $value) {
+        //specify the button
+        $buttID = "pop_butt" . $value->whichbutt . "_label";
+      
+        //overall total so far
+        $total[$value->whichbutt . ": " . $node->{$buttID}['und'][0]['value']]++;
+      
+        //monthly total
+        if($prevmonth != $value->month){
+        	$total_monthly[$value->month] = $allbutts;
+        }
+        $total_monthly[$value->month][$value->whichbutt . ": " . $node->{$buttID}['und'][0]['value']]++;
+        $prevmonth = $value->month;
+      
+        //weekly total
+        if($prevweek != $value->week){
+        	$total_weekly[$value->week] = $allbutts;
+        }
+        $total_weekly[$value->week][$value->whichbutt . ": " . $node->{$buttID}['und'][0]['value']]++;
+        $prevweek = $value->week;
+      
+        //daily total
+        if($prevday != $value->day){
+        	$total_daily[$value->day] = $allbutts;
+        }
+        $total_daily[$value->day][$value->whichbutt . ": " . $node->{$buttID}['und'][0]['value']]++;
+        $prevday = $value->day;
+      
+      }
+      //ksort($total);
+      $popcontent .= "<div class='pop_title'>`" . l($node->title, 'node/' . $node->nid) . "`</div>\n\n";
+      $prevmonth = 0;
+      $prevweek = 0;
+      $prevday = 0;
+      $firstday = TRUE;
+      
+      //OVERALL VIEW: a total with no days below it...
+      $m = 1;
+      $total_votes = array_sum($total);
+      $popcontent .= "<div class='pop_m'><div class='month_header'>Overall totals</div>";
+      foreach ($total as $key => $value) {
+        $percent = round(($value/$total_votes)*100, 2);
+  			$popcontent .= "<div class='m_total'><div class='label option_$m'>$key</div> <div class='data option_$m' style='width: " . ($percent/2) . "%;'>$value ($percent%)</div></div>\n\n";
+  			$popcontent .= "<div style='clear: both;'></div>";
+  			$m++;
+      }
+      $popcontent .= "</div>";
+      
+      //MONTHLY VIEW: month numbers with indented days below it...
+      foreach($data as $key => $value){
+      	//month header
+      	if($prevmonth != $value->month){
+      	  if ($prevmonth) {
+      	   $popcontent .= "</div><!-- end of boxodays -->\n\n</div><!-- end of pop_m -->\n\n";
+      	   $firstday = TRUE;
+      	  }
+      	  
+      		$popcontent .= "<div class='pop_m'><div class='month_header'>".date("F Y", $value->whichdate)."</div>";
+          
+      		//get total votes and find the highest value for this month
+      		$hivalue = 0;
+      		$hikey = 0;
+      		$mtotal = 0;
+      		foreach($total_monthly[$value->month] as $mkey => $mvalue){
+      			if($mvalue > $hivalue){
+      				$hivalue = $mvalue;
+      				$hikey = $mkey;
+      			}
+      			$mtotal += $mvalue;
+      		}
+      		$m = 1;
+      		foreach($total_monthly[$value->month] as $mkey => $mvalue){
+      		  $percent = round(($mvalue/$mtotal)*100, 2);
+      			$popcontent .= "<div class='m_total'><div class='label option_$m'>$mkey</div> <div class='data option_$m' style='width: ".($percent/2)."%;'>$mvalue ($percent%)</div></div>\n\n";
+      			$popcontent .= "<div style='clear: both;'></div>";
+      			$m++;
+      		}
+      	}
+      	$prevmonth = $value->month;
+    	
+      	//the daily data
+      	if($prevday != $value->day){
+      		//get total votes and find the highest value for this day
+      		$hivalue = 0;
+      		$hikey = 0;
+      		$dtotal = 0;
+      		foreach($total_daily[$value->day] as $dkey => $dvalue){
+      			if($dvalue > $hivalue){
+      				$hivalue = $dvalue;
+      				$hikey = $dkey;
+      			}
+      			$dtotal += $dvalue;
+      		}
+      	  if ($firstday) {
+      	   $popcontent .= "<a href='#' class='bodswitch'>Breakdown by day...</a><div class='boxodays'>";
+      	  }else {
+      	   $popcontent .= "<!-- not the first day in this month box -->";
+      	  }
+      		$popcontent .= "<div class='pop_d'><div class='day_header'><div style='float: left;'>".date("l jS", $value->whichdate)."</div>";
+      		$d = 1;
+      		$popcontent .= "<div style='float: right;'>";
+      		foreach ($total_daily[$value->day] as $dkey => $dvalue) {
+      		  $popcontent .= "[$dvalue]";
+      		}
+      		$popcontent .= "</div>";
+      		$popcontent .= "</div>";
+      		
+      		$d = 1;
+      		foreach($total_daily[$value->day] as $dkey => $dvalue){
+      		  $percent = round(($dvalue/$dtotal)*100, 2);
+      			$percent > 0 ? $popcontent .= "<div class='day_bar option_$d' style='width:".($percent/2)."%;'>$percent%</div>\n\n" : $popcontent;
+      			$d++;
+      		}
+      		$firstday = FALSE;
+    		  
+      		$popcontent .= "<div style='clear: both;'></div>";
+      		$popcontent .= "</div><!-- end of pop_d -->\n\n";
+      	}
+      	$prevday = $value->day;
+    	
+    	
+      }
+    $popcontent .= "</div><!-- end of boxodays -->\n\n</div><!-- end of pop_m -->\n\n";
+    
+    }else{
+      $popcontent .= "no data to crunch - come back later";
+    }
+    
+    
+    
+    
+    
+  }else {
+    $fieldset = array(
+      '#title' => $fs_title,
+      '#collapsible' => FALSE,
+      '#collapsed' => FALSE,
+      '#children' => $fs_body);
+    $popcontent .= theme('fieldset', array('element' => $fieldset));
+    
+  }
+  
+  return $popcontent;
+}
+
+
+
+
+
+/**
+ * Page callback: Store the details of the click
+ *
+ * @see current_posts_menu()
+ */
+function modalpop_click_capture() {
+  $info = $_POST;
+  watchdog('modalpop', serialize($info));
+  
+  $logid = db_insert('modalpop_log')
+  ->fields(array(
+    'nid' => $info['nid'],
+    'uid' => $info['uid'],
+    'whichbutt' => $info['whichbutt'],
+    'whichdate' => $info['whichdate'],
+  ))
+  ->execute();
+  
+  echo TRUE;
+}
+
+
+
