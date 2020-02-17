@@ -1,0 +1,25 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.body
+    - node.type.modalpop
+  module:
+    - text
+  enforced:
+    module:
+      - modalpop
+id: node.modalpop.body
+field_name: body
+entity_type: node
+bundle: modalpop
+label: Body
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings:
+  display_summary: true
+third_party_settings: {  }
+field_type: text_with_summary

@@ -1,0 +1,12 @@
+modalpop.modal_pop_settings_form:
+  title: 'ModalPopSettingsForm'
+  route_name: modalpop.modal_pop_settings_form
+  description: 'Set the default values for modal pop-ups.'
+  parent: system.admin_config_content
+  weight: 99
+modalpop.modal_pop_analysis:
+  title: 'ModalPop traffic analysis'
+  route_name: modalpop.modal_pop_analysis
+  description: 'Review how your visitors have interacted with your pop-ups.'
+  parent: system.admin_reports
+  weight: 99
