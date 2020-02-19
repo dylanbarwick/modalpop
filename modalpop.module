@@ -1,0 +1,224 @@
+<?php
+
+/**
+ * @file
+ * Module file for modalpop.
+ */
+
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\node\Entity\Node;
+use Drupal\user\Entity\User;
+use Drupal\node\NodeInterface;
+use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Access\AccessResult;
+
+/**
+ * @defgroup modalpop Example: Config Node Type
+ * @ingroup examples
+ * @{
+ * A basic example of defining a content type through configuration YAML files.
+ *
+ * In this example we create two content types for Drupal 8, using only YAML
+ * files. Well, mostly only YAML files... One of our content types is locked,
+ * so the user can't delete it while the module is installed. For this we need
+ * a very tiny amount of support code.
+ *
+ * The simplest way to author the per-type YAML files is to create the content
+ * types within Drupal and then take the YAML files from the configuration
+ * directory. Like this:
+ *
+ * - Install Drupal 8.
+ * - Create a new content type at admin/structure/types/add. Let's call it
+ *   'Nifty Content Type'.
+ * - Look in sites/default/files/config_[some hex codes]/active/. You'll see
+ *   a file called node.type.nifty_content_type.yml.
+ * - Copy or move that file to your module's config/ directory.
+ * - Make sure to remove the uuid information from the YAML files.
+ *
+ * You can see two of these YAML files in this module's config/ directory.
+ *
+ * If you want to lock a content type created in this way, you'll have to
+ * implement hook_install() and hook_uninstall(). In hook_install(), you'll
+ * set the content type to be locked. In hook_uninstall() you'll set the
+ * content type to be unlocked.
+ *
+ * Content types created in this way will remain available after the user has
+ * uninstalled the module. If you were to fail to set the content type as
+ * unlocked, the user would not be able to delete it.
+ *
+ * @see https://drupal.org/node/2029519
+ * @}
+ */
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function modalpop_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  if ($form_id == 'node_modalpop_edit_form' || $form_id == 'node_modalpop_form') {
+    $config = Drupal::config('modalpop.modalpopsettings');
+    $default_expiry = $config->get('modalpop_cookie_expiry', []);
+    $default_opacity = $config->get('modalpop_overlay_opacity', []);
+
+    $form['field_pop_overlay_opacity']['widget']['#default_value'] = $default_opacity;
+    $form['butt1'] = [
+      '#type' => 'details',
+      '#title' => t('Popup button 1'),
+      '#description' => t('Lorem ipsum.'),
+      '#open' => FALSE,
+      '#weight' => 10,
+    ];
+
+    $form['butt1']['field_pop_butt1_label'] = $form['field_pop_butt1_label'];
+    unset($form['field_pop_butt1_label']);
+
+    $form['butt1']['field_pop_butt1_link'] = $form['field_pop_butt1_link'];
+    unset($form['field_pop_butt1_link']);
+
+    $form['field_pop_butt1_expiry']['widget'][0]['value']['#default_value'] = $default_expiry;
+    $form['butt1']['field_pop_butt1_expiry'] = $form['field_pop_butt1_expiry'];
+    unset($form['field_pop_butt1_expiry']);
+
+    $form['butt2'] = [
+      '#type' => 'details',
+      '#title' => t('Popup button 2'),
+      '#description' => t('Lorem ipsum.'),
+      '#open' => FALSE,
+      '#weight' => 12,
+    ];
+
+    $form['butt2']['field_pop_butt2_label'] = $form['field_pop_butt2_label'];
+    unset($form['field_pop_butt2_label']);
+
+    $form['butt2']['field_pop_butt2_link'] = $form['field_pop_butt2_link'];
+    unset($form['field_pop_butt2_link']);
+
+    $form['field_pop_butt2_expiry']['widget'][0]['value']['#default_value'] = $default_expiry;
+    $form['butt2']['field_pop_butt2_expiry'] = $form['field_pop_butt2_expiry'];
+    unset($form['field_pop_butt2_expiry']);
+
+    $form['butt3'] = [
+      '#type' => 'details',
+      '#title' => t('Popup button 3'),
+      '#description' => t('Lorem ipsum.'),
+      '#open' => FALSE,
+      '#weight' => 14,
+    ];
+
+    $form['butt3']['field_pop_butt3_label'] = $form['field_pop_butt3_label'];
+    unset($form['field_pop_butt3_label']);
+
+    $form['butt3']['field_pop_butt3_link'] = $form['field_pop_butt3_link'];
+    unset($form['field_pop_butt3_link']);
+
+    $form['field_pop_butt3_expiry']['widget'][0]['value']['#default_value'] = $default_expiry;
+    $form['butt3']['field_pop_butt3_expiry'] = $form['field_pop_butt3_expiry'];
+    unset($form['field_pop_butt3_expiry']);
+  }
+
+}
+
+/**
+ * Implements hook_theme().
+ */
+function modalpop_theme($existing, $type, $theme, $path) {
+  return [
+    'node__modalpop' => [
+      'base hook' => 'node',
+    ],
+    'modalpop_monthly' => [
+      'render element' => 'element',
+    ],
+    'modalpop_daily' => [
+      'render element' => 'element',
+    ],
+  ];
+}
+
+/**
+ * Implements hook_page_bottom().
+ */
+function modalpop_page_bottom(array &$page_bottom) {
+
+  $match = 0;
+  global $base_path;
+  $is_front_page = Drupal::service('path.matcher')->isFrontPage();
+  $user = User::load(Drupal::currentUser()->id());
+
+  if (!$user->hasPermission('avoid popups') && !\Drupal::service('router.admin_context')->isAdminRoute()) {
+    // Get all modalpop nodes ordered by popstart DESC - ie most recent first.
+    $nids = Drupal::entityQuery('node')->condition('type', 'modalpop')->execute();
+    $nodes = Node::loadMultiple($nids);
+
+    // Step through each node and compare its paths with current path.
+    foreach ($nodes as $node) {
+      $whichpage = explode("\r\n", $node->get('field_whichpath')->getString());
+      if (count($whichpage) > 0) {
+        foreach ($whichpage as $thispath) {
+          trim($thispath);
+          // Special case for `<front>`.
+          if ($thispath != '<front>') {
+            if (substr($thispath, 0, 1) == '/') {
+              $thispath = substr($base_path, 1) . substr($thispath, 1);
+            }
+            else {
+              $thispath = '*' . $thispath;
+            }
+          }
+
+          $path2 = "/^\/" . str_replace(["/", "*"], ["\/", ".*"], $thispath) . '$/i';
+          $match = preg_match($path2, $_SERVER['REQUEST_URI']);
+          // As soon as we find a match (`<front>` is a special case and so
+          // is hardcoded) we break out of the while loop this means that
+          // only one pop-up appears per page.
+          if ($match == 1 || ($is_front_page && $thispath == "<front>")) {
+            $match = 1;
+            $nid = $node->id();
+            break 2;
+          }
+        }
+      }
+    }
+
+    if ($match && $nid) {
+      $view_mode = 'default';
+      $renderer = Drupal::service('renderer');
+      $view_builder = \Drupal::entityTypeManager()->getViewBuilder('node');
+      $node = Node::load($nid);
+      $build = $view_builder->view($node, $view_mode);
+      $output = $renderer->renderRoot($build);
+      $modalpop_settings = [
+        'mpnid' => $nid,
+        'overlay_opacity' => $node->get('field_pop_overlay_opacity')->getString(),
+        'uid' => $user->id(),
+        'mptime' => time(),
+      ];
+      $page_bottom['modalpop']['#markup'] = $output;
+      $page_bottom['modalpop']['#attached']['library'][] = 'modalpop/modalpop-styles';
+      $page_bottom['modalpop']['#attached']['library'][] = 'modalpop/modalpop-scripts';
+      $page_bottom['modalpop']['#attached']['drupalSettings']['modalpop']['mpvalues'] = $modalpop_settings;
+
+    }
+
+  }
+
+}
+
+/**
+ * Restricts access to the modalpop nodes if viewed as a page.
+ */
+function modalpop_node_access(NodeInterface $node, $op, AccountInterface $account) {
+  $user = User::load(Drupal::currentUser()->id());
+  switch ($op) {
+    case 'view':
+      if (!$user->hasPermission('access popup node view') && $node->gettype() == 'modalpop') {
+        return AccessResult::forbidden()->cachePerPermissions();
+      }
+
+      break;
+
+    default:
+      break;
+  }
+
+  return AccessResult::neutral()->cachePerPermissions();
+}

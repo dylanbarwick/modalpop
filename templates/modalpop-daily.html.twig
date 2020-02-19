@@ -1,0 +1,42 @@
+{#
+/**
+ * @file
+ * Default theme implementation for modalpop_daily.
+ *
+ * Themes the render array for the daily breakdown of moalpop analytics.
+ *
+ * Available variables:
+ * - element: Element that will be rendered.
+ * - element['whichmonth'] : A number that represents a month.
+ * - element['days'] : An associative array of values specific to a single day.
+ * -- element['days']['date']
+ * -- element['days']['x']['label']
+ * -- element['days']['x']['clicks']
+ * -- element['days']['x']['percent']
+ * -- element['days']['x']['demipercent']
+ *
+ * @ingroup themeable
+ */
+#}
+<div class='bodswitch' id='bods{{ element['whichmonth'] }}' rel='{{ element['whichmonth'] }}'>Breakdown by day...</div>
+<div class='boxodays clearfix closed' id='bod{{ element['whichmonth'] }}'>
+  {% for day in element['days'] %}
+    <div class='pop_d clearfix'>
+      <div class='day_header'>
+        <div style='float: left;'>{{ day.date }}</div>
+        <div style='float: right;'>
+          {% for i in range(1,3) %}
+            {% if day[i]['clicks'] is not empty %}
+              [{{ day[i]['clicks'] }}]
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+      {% for i in range(1,3) %}
+        {% if day[i]['percent'] != '0' %}
+          <div class='day_bar option_{{ i }}' style='width:{{ day[i]['demipercent'] }}%;'>{{ day[i]['percent'] }}%</div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  {% endfor %}
+</div> {# end of .boxodays #}

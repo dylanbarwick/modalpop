@@ -1,0 +1,16 @@
+administer modal popup settings:
+  title: 'Administer modalpop settings'
+  description: 'View, edit and submit the modalpop form.'
+  restrict access: true
+avoid popups:
+  title: 'Excuse this role from popups'
+  description: 'Admins etc do not need to see this.'
+avoid click_capture:
+  title: 'Excuse this role from popup click_capture'
+  description: 'Admins etc should not muddy the waters while testing.'
+access popup click_capture:
+  title: 'Review popup analytics.'
+  description: 'Access the modalpop analytics page.'
+access popup node view:
+  title: 'View the popup node as a page.'
+  description: 'Go to `node/x` and view the popup as a page.'

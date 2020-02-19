@@ -1,0 +1,18 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_whichpath
+    - node.type.modalpop
+id: node.modalpop.field_whichpath
+field_name: field_whichpath
+entity_type: node
+bundle: modalpop
+label: 'Pop-up paths'
+description: 'List the paths where this pop-up should appear, one per line. The asterisk, `*`, can be used as a wildcard. If left blank then the pop-up will not appear.'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string_long

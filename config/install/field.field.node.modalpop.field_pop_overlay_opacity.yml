@@ -1,0 +1,20 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_pop_overlay_opacity
+    - node.type.modalpop
+  module:
+    - options
+id: node.modalpop.field_pop_overlay_opacity
+field_name: field_pop_overlay_opacity
+entity_type: node
+bundle: modalpop
+label: 'Overlay opacity'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: list_integer

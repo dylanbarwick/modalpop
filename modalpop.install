@@ -1,0 +1,90 @@
+<?php
+
+/**
+ * @file
+ * Install file for node_type_example.
+ */
+
+/**
+ * Implements hook_install().
+ *
+ * We don't want users to be able to delete our locked_content_type content
+ * type. So therefore we have to tell Drupal that this is the case. This
+ * can't be done in the content type's configuration YAML file, so we have to
+ * do it in code, here.
+ *
+ * @ingroup node_type_example
+ */
+function modalpop_install() {
+  // Set default values for config which require dynamic values.
+  \Drupal::configFactory()->getEditable('modalpop.modalpopsettings')
+    ->set('modalpop_cookie_expiry', '30')
+    ->save();
+  \Drupal::configFactory()->getEditable('modalpop.modalpopsettings')
+    ->set('modalpop_overlay_opacity', '20')
+    ->save();
+}
+
+/**
+ * Implements hook_uninstall().
+ *
+ * All nodes of type `modalpop` will be deleted, followed closely by
+ * the content type itself.
+ */
+function modalpop_uninstall() {
+  // Delete all nodes of given content type.
+  $storage_handler = \Drupal::entityTypeManager()
+    ->getStorage('node');
+  $nodes = $storage_handler->loadByProperties(['type' => 'modalpop']);
+  $storage_handler->delete($nodes);
+
+  // Delete content type.
+  $content_type = \Drupal::entityTypeManager()
+    ->getStorage('node_type')
+    ->load('modalpop');
+  $content_type->delete();
+}
+
+/**
+ * Implements hook_schema().
+ */
+function modalpop_schema() {
+
+  $schema['modalpop_log'] = [
+    'fields' => [
+      'logid' => [
+        'description' => 'The primary identifier for this log entry.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'nid' => [
+        'description' => 'Primary key of the popup entity.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ],
+      'uid' => [
+        'description' => 'The {users}.uid that clicked the popup.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+      'whichbutt' => [
+        'description' => 'Which button was clicked.',
+        'type' => 'varchar',
+        'length' => 1,
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+      'whichdate' => [
+        'description' => 'A Unix timestamp indicating when this popup was clicked.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+    ],
+    'primary key' => ['logid'],
+  ];
+
+  return $schema;
+}
