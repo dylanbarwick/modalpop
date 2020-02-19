@@ -1,92 +1,59 @@
-(function ($) {
+(function ($, Drupal, drupalSettings) {
+  'use strict';
 
-  Drupal.behaviors.modalpop = {
+  Drupal.behaviors.mpsettings = {
     attach: function (context, settings) {
-    ///////////////////////////////////////////////////////
-      /**/
-      if (typeof Drupal.settings.modalpop != "undefined") {
-        var mpnid = Drupal.settings.modalpop.mpnid;
-        var overlay_opacity = (Drupal.settings.modalpop.overlay_opacity / 100);
-        var user_uid = Drupal.settings.modalpop.uid;
-        var mptime = Drupal.settings.modalpop.time;
-      }
-      
-      $('.modalpop-button').click(function(){
-        $('.modalpop-container').fadeOut();
-        $('#modalpop-overlay').fadeOut();
-      });
-      
-      $('a.bodswitch').click(function(){
-        $(this).next().slideToggle();
-      });
-      
-      
-      
-      function trim(str) { 
-        return str.replace(/^\s+|\s+$/g,'');
-      }
-      
-      /**/
-      function get_cookie(c_name){
-        var cookies = document.cookie.split(';');
-        for (var i=0; i < cookies.length; i++) {
-          var cookieCrumbs = cookies[i].split('=');
-          var cookieName = cookieCrumbs[0];
-          var cookieValue = cookieCrumbs[1];
+      ////////////////////////////////////////
 
+      let bodtell = '';
+      // Only show this if we're passing any settings to it.
+      if (typeof drupalSettings.modalpop !== 'undefined') {
+        let mpnid = drupalSettings.modalpop.mpvalues.mpnid;
+        let overlay_opacity = (drupalSettings.modalpop.mpvalues.overlay_opacity / 100);
+        let user_uid = drupalSettings.modalpop.mpvalues.uid;
+        let mptime = drupalSettings.modalpop.mpvalues.mptime;
+        let cookie_name = 'block_popup_' + mpnid;
+        let thistarget = '_self';
 
-          if (trim(cookieName) == c_name) {
-            return cookieValue;
-          }
+        if(typeof mpnid != "undefined" && !$.cookie(cookie_name)){
+          $('#modalpop-overlay').css('opacity', overlay_opacity).fadeIn();
+          $('.modalpop-container#mpc' + mpnid).fadeIn();
         }
-        return false;
-      }
 
-      function set_cookie(c_name, c_value, c_days){
-        var thisDate = new Date();
-        thisDate.setTime(thisDate.getTime()+(c_days*24*60*60*1000))
-        var cookieDate = thisDate.toGMTString();
-        var theCookie = c_name + '=' + c_value + ' ;expires=' + cookieDate;
-        document.cookie = theCookie;
-      }
-      
-      function follow_modalpop_link(destination, target) {
-        if (destination.length > 0 && destination.substring(1,2) != '#') {
-          //alert('we have a link (' + destination + ') and it is not `#`:: ' + destination.substring(0,1));
-          if (target == '_blank') { //open in a new window?
-            window.open(destination);
+        $('.modalpop-button a').one('click', function(e){
+          if(e.handled !== true) {
+            let thisalt = $(this).attr('alt');
+            let cookie_days = Number($(this).attr('rel'));
+            if (typeof $(this).attr('target') != 'undefined') {
+              thistarget = $(this).attr('target');
+            }
+            logclick($(this).attr('href'), thistarget, drupalSettings.path.baseUrl + 'modalpopstore', { 'nid': mpnid, 'uid': user_uid, 'whichbutt': thisalt, 'whichdate': mptime });
+            $.cookie(cookie_name, thisalt, {expires: cookie_days});
+            $('#modalpop-overlay').css('opacity', overlay_opacity).fadeOut();
+            $('.modalpop-container#mpc' + mpnid).fadeOut();
+            e.handled = true;
           }
-          else {
-            location.href = destination;
-          }
-        }
-        else {
-          //alert('we have no link or it could be an anchor:: ' + destination);
-        }
-      }
-      
-      
-      var cookie_name = 'block_popup_' + mpnid;
-      
-      if(typeof mpnid != "undefined" && !get_cookie(cookie_name)){//no cookie
-        
-        $('#modalpop-overlay').css('opacity', overlay_opacity).fadeIn();
-        $('.modalpop-container#mpc' + mpnid).fadeIn();
-        $('.modalpop-button a').click(function(e){
-          var thisalt = $(this).attr('alt');
-          var cookie_days = $(this).attr('rel');
-          logclick($(this).attr('href'), $(this).attr('target'), Drupal.settings.basePath + 'modalpopstore', { 'nid': mpnid, 'uid': user_uid, 'whichbutt': thisalt, 'whichdate': mptime });
-          set_cookie(cookie_name, thisalt, cookie_days);
+
           e.preventDefault();
         });
-        
-      }else{
-        
-      };
-      
+      }
+
+      $('.bodswitch').on('mouseup', function(e){
+        if(e.handled !== true) {
+          bodtell = $(this).attr('rel');
+          $('#bod' + bodtell).slideToggle();
+          e.handled = true;
+        }
+        e.preventDefault();
+      });
+
+      $('.m_total .data, .pop_d .day_bar').each(function(e) {
+        let percent = $(this).attr('rel')/2;
+        $(this).animate({width:percent + '%'}, 500);
+      });
+
       //AJAX click-logging function with redirect on success
       function logclick(cl_href, cl_target, cl_url, cl_data) {
-        //alert('about to do ajax magic...' + cl_url + cl_data);
         $.ajax({
           url: cl_url,
           async: true,
@@ -94,22 +61,28 @@
           type: "POST",
           data: cl_data,
           cache: false,
-          success: function() {
+          success: function(response_data) {
             follow_modalpop_link(
-              cl_href, 
+              cl_href,
               cl_target
             );
           },
         });
       }
-      
-      
-    
-      
-      
-      
-    ///////////////////////////////////////////////////////
+
+      function follow_modalpop_link(destination, target) {
+        if (destination.length > 0 && destination.substring(1,2) !== '#') {
+          if (target === '_blank') {
+            window.open(destination);
+          }
+          else {
+            location.href = destination;
+          }
+        }
+      }
+
+      ////////////////////////////////////////
     }
   };
 
-})(jQuery);
+}(jQuery, Drupal, drupalSettings));

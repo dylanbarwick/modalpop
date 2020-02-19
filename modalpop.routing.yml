@@ -1,0 +1,29 @@
+modalpop.modal_pop_settings_form:
+  path: 'admin/config/content/modalpopsettings'
+  defaults:
+    _form: '\Drupal\modalpop\Form\ModalPopSettingsForm'
+    _title: 'ModalPopSettingsForm'
+  requirements:
+    _permission: 'access administration pages'
+  options:
+    _admin_route: TRUE
+modalpop.modal_pop_click_capture:
+  path: 'modalpopstore'
+  defaults:
+    _controller: 'Drupal\modalpop\Controller\ModalPopClickCaptureController::getClickCapture'
+    _title: 'Modalpop analytics save.'
+  methods:  [POST]
+  requirements:
+    _access: 'TRUE'
+  options:
+    no_cache: 'TRUE'
+modalpop.modal_pop_analysis:
+  path: 'admin/reports/modalpopanalysis/{nid}'
+  defaults:
+    _controller: 'Drupal\modalpop\Controller\ModalPopAnalysis::mpanalysis'
+    _title: 'Modalpop analysis'
+    nid: 0
+  requirements:
+    _permission: 'access popup click_capture'
+  options:
+    _admin_route: TRUE

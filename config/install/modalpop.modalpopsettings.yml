@@ -1,0 +1,3 @@
+modalpop:
+  modalpop_cookie_expiry: "30"
+  modalpop_overlay_opacity: "20"

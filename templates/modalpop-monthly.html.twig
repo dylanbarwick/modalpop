@@ -1,0 +1,31 @@
+{#
+/**
+ * @file
+ * Default theme implementation for modalpop_monthly.
+ *
+ * Themes the render array for either the overview or a monthly section.
+ *
+ * Available variables:
+ * - element: Element that will be rendered.
+ * - element['linktitle'] : The title of the modalpop node.
+ * - element['header'] : header text of the overall totals or monthly total.
+ * - element['m_totals'] : A nested array of values - percent, key, value and which.
+ *
+ * @ingroup themeable
+ */
+#}
+<div class='pop_title'>{{ element['linktitle'] }}</div>
+{# Overall totals for this modalpop #}
+<div class='pop_m'>
+  <div class='month_header'>{{ element['header'] }}</div>
+  {% for item in element['m_totals'] %}
+  <div class='m_total clearfix'>
+    <div class='label'>{{ item.label }}</div>
+    <div rel='{{ item.percent }}' class='data option_{{ item.which }}'>{{ item.value }} ({{ item.percent }}%)</div>
+  </div>
+  {% endfor %}
+  {{ element['days_data'] }}
+</div> {# // End of .pop_m #}
+
+
+
