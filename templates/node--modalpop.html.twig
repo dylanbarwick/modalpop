@@ -76,6 +76,7 @@
     'node--type-' ~ node.bundle|clean_class,
     'modalpop-container',
     view_mode ? 'node--view-mode-' ~ view_mode|clean_class,
+    'mpc-' ~ content.field_template_key.0|render,
   ]
 %}
 {% set this_id = 'mpc' ~ node.id %}
