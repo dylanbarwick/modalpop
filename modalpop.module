@@ -118,10 +118,19 @@ function modalpop_form_alter(&$form, FormStateInterface $form_state, $form_id) {
 }
 
 /**
+ * Implements hook_theme_suggestions_hook().
+ */
+function modalpop_theme_suggestions_node(array $variables) {
+  $return = _modalpop_get_template_keys();
+  return $return['prefixed'];
+}
+
+/**
  * Implements hook_theme().
  */
 function modalpop_theme($existing, $type, $theme, $path) {
-  return [
+  // Essential theme return array.
+  $return = [
     'node__modalpop' => [
       'base hook' => 'node',
     ],
@@ -132,6 +141,16 @@ function modalpop_theme($existing, $type, $theme, $path) {
       'render element' => 'element',
     ],
   ];
+
+  $more_keys = _modalpop_get_template_keys();
+
+  if (!empty($more_keys['prefixed'])) {
+    foreach ($more_keys as $key => $template_key) {
+      $return[$template_key] = ['base hook' => 'node'];
+    }
+  }
+
+  return $return;
 }
 
 /**
@@ -221,4 +240,29 @@ function modalpop_node_access(NodeInterface $node, $op, AccountInterface $accoun
   }
 
   return AccessResult::neutral()->cachePerPermissions();
+}
+
+/**
+ * Helper function to get all field_template_key values and return them.
+ *
+ * @return array
+ *   The returned array has three parts: `sanitised`, `raw` and `prefixed`;
+ */
+function _modalpop_get_template_keys() {
+  // Get all field_template_key values currently in existence.
+  $nids = Drupal::entityQuery('node')->condition('type', 'modalpop')->execute();
+  $nodes = Node::loadMultiple($nids);
+  foreach ($nodes as $key => $node) {
+    $template_keys[] = $node->get('field_template_key')->value;
+  }
+
+  // Sanitise the keys.
+  if (!empty($template_keys)) {
+    foreach ($template_keys as $key => $template_key) {
+      $return['raw'][] = $template_key;
+      $return['sanitised'][] = str_replace([' ', '-'], ['', '_'], $template_key);
+      $return['prefixed'][] = 'node__modalpop_' . $template_key;
+    }
+  }
+  return $return;
 }
