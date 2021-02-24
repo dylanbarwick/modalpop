@@ -249,6 +249,7 @@ function modalpop_node_access(NodeInterface $node, $op, AccountInterface $accoun
  *   The returned array has three parts: `sanitised`, `raw` and `prefixed`;
  */
 function _modalpop_get_template_keys() {
+  $return = [];
   // Get all field_template_key values currently in existence.
   $nids = Drupal::entityQuery('node')->condition('type', 'modalpop')->execute();
   $nodes = Node::loadMultiple($nids);
