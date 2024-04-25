@@ -2,14 +2,14 @@ langcode: en
 status: true
 dependencies:
   config:
-    - field.storage.node.field_pop_butt3_label
+    - field.storage.node.field_template_key
     - node.type.modalpop
-id: node.modalpop.field_pop_butt3_label
-field_name: field_pop_butt3_label
+id: node.modalpop.field_template_key
+field_name: field_template_key
 entity_type: node
 bundle: modalpop
-label: 'Pop-up button 3 - label'
-description: 'See above (pop-up button 1) for details.'
+label: 'Template key'
+description: 'A unique code to allow for a unique template for this pop-up.'
 required: false
 translatable: false
 default_value: {  }

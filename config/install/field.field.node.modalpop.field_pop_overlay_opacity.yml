@@ -11,7 +11,7 @@ field_name: field_pop_overlay_opacity
 entity_type: node
 bundle: modalpop
 label: 'Overlay opacity'
-description: ''
+description: 'Each pop-up will appear over a full-screen overlay. This will set the opacity of this overlay.'
 required: false
 translatable: false
 default_value: {  }

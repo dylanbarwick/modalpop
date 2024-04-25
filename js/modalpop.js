@@ -1,9 +1,10 @@
-(function ($, Drupal, drupalSettings) {
+(function ($, Drupal, drupalSettings, Cookies) {
   'use strict';
 
   Drupal.behaviors.mpsettings = {
     attach: function (context, settings) {
       ////////////////////////////////////////
+      console.log("I'm alive!!");
 
       let bodtell = '';
       // Only show this if we're passing any settings to it.
@@ -14,8 +15,9 @@
         let mptime = drupalSettings.modalpop.mpvalues.mptime;
         let cookie_name = 'block_popup_' + mpnid;
         let thistarget = '_self';
+        const myCookieValue = Cookies.get(cookie_name);
 
-        if(typeof mpnid != "undefined" && !$.cookie(cookie_name)){
+        if(typeof mpnid != "undefined" && !myCookieValue){
           $('#modalpop-overlay').css('opacity', overlay_opacity).fadeIn();
           $('.modalpop-container#mpc' + mpnid).fadeIn();
         }
@@ -28,7 +30,8 @@
               thistarget = $(this).attr('target');
             }
             logclick($(this).attr('href'), thistarget, drupalSettings.path.baseUrl + 'modalpopstore', { 'nid': mpnid, 'uid': user_uid, 'whichbutt': thisalt, 'whichdate': mptime });
-            $.cookie(cookie_name, thisalt, {expires: cookie_days});
+            // $.cookie(cookie_name, thisalt, {expires: cookie_days});
+            Cookies.set(cookie_name, thisalt, { expires: cookie_days});
             $('#modalpop-overlay').css('opacity', overlay_opacity).fadeOut();
             $('.modalpop-container#mpc' + mpnid).fadeOut();
             e.handled = true;
@@ -85,4 +88,4 @@
     }
   };
 
-}(jQuery, Drupal, drupalSettings));
+}(jQuery, Drupal, drupalSettings, Cookies));

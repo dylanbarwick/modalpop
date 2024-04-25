@@ -9,5 +9,5 @@ modalpop-scripts:
   dependencies:
     - core/drupal
     - core/jquery
-    - core/jquery.cookie
+    - js_cookie/js-cookie
     - core/drupalSettings

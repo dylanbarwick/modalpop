@@ -2,10 +2,9 @@ name: Modal PopUps
 description: Scriptable and styleable modal pop-ups that are tracked.
 package: Useful Stuff
 type: module
-core: 8.x
+core_version_requirement: ^9.2 || ^10
 dependencies:
   - drupal:node
   - drupal:path
   - drupal:text
-
-
+  - js_cookie:js_cookie

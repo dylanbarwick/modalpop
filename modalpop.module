@@ -11,6 +11,7 @@ use Drupal\user\Entity\User;
 use Drupal\node\NodeInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Access\AccessResult;
+use Drupal\menu_test\Access\AccessCheck;
 
 /**
  * @defgroup modalpop Example: Config Node Type
@@ -145,7 +146,7 @@ function modalpop_theme($existing, $type, $theme, $path) {
   $more_keys = _modalpop_get_template_keys();
 
   if (!empty($more_keys['prefixed'])) {
-    foreach ($more_keys as $key => $template_key) {
+    foreach ($more_keys['prefixed'] as $key => $template_key) {
       $return[$template_key] = ['base hook' => 'node'];
     }
   }
@@ -159,13 +160,17 @@ function modalpop_theme($existing, $type, $theme, $path) {
 function modalpop_page_bottom(array &$page_bottom) {
 
   $match = 0;
+  $nid = FALSE;
   global $base_path;
   $is_front_page = Drupal::service('path.matcher')->isFrontPage();
   $user = User::load(Drupal::currentUser()->id());
 
   if (!$user->hasPermission('avoid popups') && !\Drupal::service('router.admin_context')->isAdminRoute()) {
     // Get all modalpop nodes ordered by popstart DESC - ie most recent first.
-    $nids = Drupal::entityQuery('node')->condition('type', 'modalpop')->execute();
+    $nids = Drupal::entityQuery('node')
+      ->condition('type', 'modalpop')
+      ->accessCheck(TRUE)
+      ->execute();
     $nodes = Node::loadMultiple($nids);
 
     // Step through each node and compare its paths with current path.
@@ -251,7 +256,10 @@ function modalpop_node_access(NodeInterface $node, $op, AccountInterface $accoun
 function _modalpop_get_template_keys() {
   $return = [];
   // Get all field_template_key values currently in existence.
-  $nids = Drupal::entityQuery('node')->condition('type', 'modalpop')->execute();
+  $nids = Drupal::entityQuery('node')
+    ->condition('type', 'modalpop')
+    ->accessCheck(TRUE)
+    ->execute();
   $nodes = Node::loadMultiple($nids);
   foreach ($nodes as $key => $node) {
     $template_keys[] = $node->get('field_template_key')->value;

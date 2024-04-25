@@ -3,6 +3,8 @@ status: true
 dependencies:
   config:
     - field.storage.node.body
+    - filter.format.basic_html
+    - filter.format.plain_text
     - node.type.modalpop
   module:
     - text
@@ -14,12 +16,15 @@ field_name: body
 entity_type: node
 bundle: modalpop
 label: Body
-description: ''
+description: "This is the content of the pop-up. It's probably best to keep it short and minimally styled."
 required: false
 translatable: true
 default_value: {  }
 default_value_callback: ''
 settings:
   display_summary: true
-third_party_settings: {  }
+  required_summary: false
+  allowed_formats:
+    - basic_html
+    - plain_text
 field_type: text_with_summary

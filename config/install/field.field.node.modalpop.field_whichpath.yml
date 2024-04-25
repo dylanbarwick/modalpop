@@ -9,7 +9,7 @@ field_name: field_whichpath
 entity_type: node
 bundle: modalpop
 label: 'Pop-up paths'
-description: 'List the paths where this pop-up should appear, one per line. The asterisk, `*`, can be used as a wildcard. If left blank then the pop-up will not appear.'
+description: 'List the paths where this pop-up should appear, one per line. The asterisk, `*`, can be used as a wildcard. If left blank then the pop-up will not appear. You can specify the main landing page with `<front>`.'
 required: false
 translatable: false
 default_value: {  }
