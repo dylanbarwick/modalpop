@@ -262,7 +262,10 @@ function _modalpop_get_template_keys() {
     ->execute();
   $nodes = Node::loadMultiple($nids);
   foreach ($nodes as $key => $node) {
-    $template_keys[] = $node->get('field_template_key')->value;
+    $template_key = $node->get('field_template_key')->value;
+    if (!empty($template_key) && strlen($template_key)) {
+      $template_keys[] = $template_key;
+    }
   }
 
   // Sanitise the keys.
