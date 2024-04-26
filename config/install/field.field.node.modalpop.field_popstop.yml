@@ -11,7 +11,7 @@ field_name: field_popstop
 entity_type: node
 bundle: modalpop
 label: 'Pop-up stop date'
-description: ''
+description: 'The date and time after which the pop-up will stop appearing.'
 required: false
 translatable: false
 default_value:

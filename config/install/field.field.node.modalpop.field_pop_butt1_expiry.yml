@@ -9,7 +9,7 @@ field_name: field_pop_butt1_expiry
 entity_type: node
 bundle: modalpop
 label: 'Pop-up button 1 - expiry'
-description: ''
+description: 'The cookie that is set to prevent this pop-up from appearing again has an expiry value that is counted in days. Set this to `30` to dismiss it for a month, set it to `1` to have it reappear in 24 hours, set it to `0` for it to appear every time the page is visited.'
 required: false
 translatable: false
 default_value: {  }

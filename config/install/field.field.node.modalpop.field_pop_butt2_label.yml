@@ -9,7 +9,7 @@ field_name: field_pop_butt2_label
 entity_type: node
 bundle: modalpop
 label: 'Pop-up button 2 - label'
-description: ''
+description: 'See above (pop-up button 1) for details.'
 required: false
 translatable: false
 default_value: {  }

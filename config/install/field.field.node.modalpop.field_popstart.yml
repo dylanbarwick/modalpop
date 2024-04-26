@@ -11,7 +11,7 @@ field_name: field_popstart
 entity_type: node
 bundle: modalpop
 label: 'Pop-up start date'
-description: ''
+description: 'The date and time from which the pop-up will start to appear.'
 required: true
 translatable: false
 default_value:

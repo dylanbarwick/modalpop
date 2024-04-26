@@ -23,7 +23,7 @@ hook_theme_suggestions_hook_alter(). It should look like this:
 /**
  * Implements hook_theme_suggestions_hook_alter().
  */
-function d8theme_theme_suggestions_node_alter(array &$suggestions, array $variables) {
+function d10theme_theme_suggestions_node_alter(array &$suggestions, array $variables) {
   // Extract the node object from $variables.
   $node = $variables['elements']['#node'];
   // If we have a node of type `modalpop` and the template key has a value.

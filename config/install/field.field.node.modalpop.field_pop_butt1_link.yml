@@ -9,7 +9,7 @@ field_name: field_pop_butt1_link
 entity_type: node
 bundle: modalpop
 label: 'Pop-up button 1 - link'
-description: ''
+description: 'The path of the page that the user is taken to on clicking the button. Leave it blank to simply dismiss the pop-up.'
 required: false
 translatable: false
 default_value: {  }
