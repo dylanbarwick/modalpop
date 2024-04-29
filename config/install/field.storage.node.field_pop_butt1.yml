@@ -1,0 +1,19 @@
+uuid: 2138e9b3-6ffc-43e2-a3ff-3ed71a15190c
+langcode: en
+status: true
+dependencies:
+  module:
+    - link
+    - node
+id: node.field_pop_butt1
+field_name: field_pop_butt1
+entity_type: node
+type: link
+settings: {  }
+module: link
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

@@ -65,6 +65,18 @@ class ModalPopSettingsForm extends ConfigFormBase {
       '#size' => 1,
       '#default_value' => $default_opacity,
     ];
+
+    $custom_template_directory = $config->get('modalpop_custom_template_directory');
+    $custom_template_directory ? $custom_template_directory : $custom_template_directory = '';
+    $form['modalpop_custom_template_directory'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Custom template directory'),
+      '#description' => $this->t('This defines the location of any custom templates for your modalpops. You might want to create a folder in a custom theme, like this: `themes/custom/MY_CUSTOM_THEME/templates/custom-modalpop-templates`.'),
+      '#maxlength' => 256,
+      '#size' => 64,
+      '#default_value' => $custom_template_directory,
+    ];
+
     return parent::buildForm($form, $form_state);
   }
 
@@ -77,6 +89,7 @@ class ModalPopSettingsForm extends ConfigFormBase {
     $this->config('modalpop.modalpopsettings')
       ->set('modalpop_cookie_expiry', $form_state->getValue('modalpop_cookie_expiry'))
       ->set('modalpop_overlay_opacity', $form_state->getValue('modalpop_overlay_opacity'))
+      ->set('modalpop_custom_template_directory', $form_state->getValue('modalpop_custom_template_directory'))
       ->save();
   }
 

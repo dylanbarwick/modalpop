@@ -69,11 +69,8 @@ function modalpop_form_alter(&$form, FormStateInterface $form_state, $form_id) {
       '#weight' => 10,
     ];
 
-    $form['butt1']['field_pop_butt1_label'] = $form['field_pop_butt1_label'];
-    unset($form['field_pop_butt1_label']);
-
-    $form['butt1']['field_pop_butt1_link'] = $form['field_pop_butt1_link'];
-    unset($form['field_pop_butt1_link']);
+    $form['butt1']['field_pop_butt1'] = $form['field_pop_butt1'];
+    unset($form['field_pop_butt1']);
 
     $form['field_pop_butt1_expiry']['widget'][0]['value']['#default_value'] = $default_expiry;
     $form['butt1']['field_pop_butt1_expiry'] = $form['field_pop_butt1_expiry'];
@@ -87,11 +84,8 @@ function modalpop_form_alter(&$form, FormStateInterface $form_state, $form_id) {
       '#weight' => 12,
     ];
 
-    $form['butt2']['field_pop_butt2_label'] = $form['field_pop_butt2_label'];
-    unset($form['field_pop_butt2_label']);
-
-    $form['butt2']['field_pop_butt2_link'] = $form['field_pop_butt2_link'];
-    unset($form['field_pop_butt2_link']);
+    $form['butt2']['field_pop_butt2'] = $form['field_pop_butt2'];
+    unset($form['field_pop_butt2']);
 
     $form['field_pop_butt2_expiry']['widget'][0]['value']['#default_value'] = $default_expiry;
     $form['butt2']['field_pop_butt2_expiry'] = $form['field_pop_butt2_expiry'];
@@ -105,11 +99,8 @@ function modalpop_form_alter(&$form, FormStateInterface $form_state, $form_id) {
       '#weight' => 14,
     ];
 
-    $form['butt3']['field_pop_butt3_label'] = $form['field_pop_butt3_label'];
-    unset($form['field_pop_butt3_label']);
-
-    $form['butt3']['field_pop_butt3_link'] = $form['field_pop_butt3_link'];
-    unset($form['field_pop_butt3_link']);
+    $form['butt3']['field_pop_butt3'] = $form['field_pop_butt3'];
+    unset($form['field_pop_butt3']);
 
     $form['field_pop_butt3_expiry']['widget'][0]['value']['#default_value'] = $default_expiry;
     $form['butt3']['field_pop_butt3_expiry'] = $form['field_pop_butt3_expiry'];
@@ -123,7 +114,12 @@ function modalpop_form_alter(&$form, FormStateInterface $form_state, $form_id) {
  */
 function modalpop_theme_suggestions_node(array $variables) {
   $return = _modalpop_get_template_keys();
-  return $return['prefixed'];
+  if (count($return) > 0 && isset($return['prefixed'])) {
+    return $return['prefixed'];
+  }
+  else {
+    return [];
+  }
 }
 
 /**
@@ -144,10 +140,16 @@ function modalpop_theme($existing, $type, $theme, $path) {
   ];
 
   $more_keys = _modalpop_get_template_keys();
+  \Drupal::logger('modalpop_more_keys')->info('<pre>' . print_r($more_keys, TRUE) . '</pre>');
 
   if (!empty($more_keys['prefixed'])) {
+    $config = Drupal::config('modalpop.modalpopsettings');
+    $custom_template_directory = $config->get('modalpop_custom_template_directory', []);
     foreach ($more_keys['prefixed'] as $key => $template_key) {
-      $return[$template_key] = ['base hook' => 'node'];
+      $template_key_updated = str_replace('_', '-', $template_key);
+      if (file_exists($custom_template_directory . $template_key_updated . '.html.twig')) {
+        $return[$template_key] = ['base hook' => 'node'];
+      }
     }
   }
 
@@ -176,6 +178,7 @@ function modalpop_page_bottom(array &$page_bottom) {
     // Step through each node and compare its paths with current path.
     foreach ($nodes as $node) {
       $whichpage = explode("\r\n", $node->get('field_whichpath')->getString());
+      \Drupal::logger('modalpop_tell')->info(print_r($whichpage, TRUE));
       if (count($whichpage) > 0) {
         foreach ($whichpage as $thispath) {
           trim($thispath);
@@ -204,10 +207,14 @@ function modalpop_page_bottom(array &$page_bottom) {
     }
 
     if ($match && $nid) {
-      $view_mode = 'default';
+      // $view_mode = 'default';
       $renderer = Drupal::service('renderer');
       $view_builder = \Drupal::entityTypeManager()->getViewBuilder('node');
       $node = Node::load($nid);
+      $view_mode = $node->get('field_template_key')->value;
+      if (empty($view_mode)) {
+        $view_mode = 'default';
+      }
       $build = $view_builder->view($node, $view_mode);
       $output = $renderer->renderRoot($build);
       $modalpop_settings = [
@@ -270,10 +277,11 @@ function _modalpop_get_template_keys() {
 
   // Sanitise the keys.
   if (!empty($template_keys)) {
+    $template_keys = array_unique($template_keys);
     foreach ($template_keys as $key => $template_key) {
       $return['raw'][] = $template_key;
       $return['sanitised'][] = str_replace([' ', '-'], ['', '_'], $template_key);
-      $return['prefixed'][] = 'node__modalpop_' . $template_key;
+      $return['prefixed'][] = 'node__modalpop__' . $template_key;
     }
   }
   return $return;

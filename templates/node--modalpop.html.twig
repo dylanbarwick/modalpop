@@ -92,48 +92,60 @@
 
   <div{{ button_attributes.addClass('modalpop-buttons-container') }}>
     {# Button 1 #}
-    {% if content.field_pop_butt1_label|render is not empty %}
+    {% if content.field_pop_butt1.0['#title']|render is not empty %}
       {% if content.field_pop_butt1_expiry %}
         {% set expiry = content.field_pop_butt1_expiry.0 %}
       {% else %}
         {% set expiry = default_expiry %}
       {% endif %}
-      {% if content.field_pop_butt1_link.0|render|striptags starts with 'http' %}
+      {% if content.field_pop_butt1.0['#url']|render|striptags starts with 'http' %}
         {% set target = "_blank" %}
       {% else %}
         {% set target = "_self" %}
       {% endif %}
-      <div class="modalpop-button" id="popbutt1"><a href="{{ content.field_pop_butt1_link.0 }}" rel="{{ expiry }}" alt="1" target="{{ target }}">{{ content.field_pop_butt1_label.0 }}</a></div>
+      <div class="modalpop-button" id="popbutt1">
+        <a href="{{ content.field_pop_butt1.0['#url'] }}" rel="{{ expiry }}" alt="1" target="{{ target }}">
+          {{ content.field_pop_butt1.0['#title'] }}
+        </a>
+      </div>
     {% endif %}
 
     {# Button 2 #}
-    {% if content.field_pop_butt2_label|render is not empty %}
+    {% if content.field_pop_butt2.0['#title']|render is not empty %}
       {% if content.field_pop_butt2_expiry %}
         {% set expiry = content.field_pop_butt2_expiry.0 %}
       {% else %}
         {% set expiry = default_expiry %}
       {% endif %}
-      {% if content.field_pop_butt2_link.0|render|striptags starts with 'http' %}
+      {% if content.field_pop_butt3.0['#url']|render|striptags starts with 'http' %}
         {% set target = "_blank" %}
       {% else %}
         {% set target = "_self" %}
       {% endif %}
-      <div class="modalpop-button" id="popbutt2"><a href="{{ content.field_pop_butt2_link.0 }}" rel="{{ expiry }}" alt="2" target="{{ target }}">{{ content.field_pop_butt2_label.0 }}</a></div>
+      <div class="modalpop-button" id="popbutt2">
+        <a href="{{ content.field_pop_butt2.0['#url'] }}" rel="{{ expiry }}" alt="2" target="{{ target }}">
+          {{ content.field_pop_butt2.0['#title'] }}
+        </a>
+      </div>
     {% endif %}
 
     {# Button 3 #}
-    {% if content.field_pop_butt3_label|render is not empty %}
+    {% if content.field_pop_butt3.0['#title']|render is not empty %}
       {% if content.field_pop_butt3_expiry %}
         {% set expiry = content.field_pop_butt3_expiry.0 %}
       {% else %}
         {% set expiry = default_expiry %}
       {% endif %}
-      {% if content.field_pop_butt3_link.0|render|striptags starts with 'http' %}
+      {% if content.field_pop_butt3.0['#url']|render|striptags starts with 'http' %}
         {% set target = "_blank" %}
       {% else %}
         {% set target = "_self" %}
       {% endif %}
-      <div class="modalpop-button" id="popbutt3"><a href="{{ content.field_pop_butt3_link.0 }}" rel="{{ expiry }}" alt="3" target="{{ target }}">{{ content.field_pop_butt3_label.0 }}</a></div>
+      <div class="modalpop-button" id="popbutt3">
+        <a href="{{ content.field_pop_butt3.0['#url'] }}" rel="{{ expiry }}" alt="3" target="{{ target }}">
+          {{ content.field_pop_butt3.0['#title'] }}
+        </a>
+      </div>
     {% endif %}
 
   </div>

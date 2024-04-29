@@ -7,4 +7,5 @@ dependencies:
   - drupal:node
   - drupal:path
   - drupal:text
+  - drupal:link
   - js_cookie:js_cookie
