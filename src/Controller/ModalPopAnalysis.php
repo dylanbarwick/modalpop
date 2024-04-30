@@ -139,9 +139,9 @@ class ModalPopAnalysis extends ControllerBase {
 
       $allbutts = [];
       $butt_labels = [
-        1 => $node->get('field_pop_butt1_label')->getString(),
-        2 => $node->get('field_pop_butt2_label')->getString(),
-        3 => $node->get('field_pop_butt3_label')->getString(),
+        1 => $node->get('field_pop_butt1')->getValue()[0]['title'],
+        2 => isset($node->get('field_pop_butt2')->getValue()[0]['title']) ? $node->get('field_pop_butt2')->getValue()[0]['title'] : [],
+        3 => isset($node->get('field_pop_butt3')->getValue()[0]['title']) ? $node->get('field_pop_butt3')->getValue()[0]['title'] : [],
       ];
       $butt_labels[1] ? $allbutts['1: ' . $butt_labels[1]] = 0 : $allbutts;
       $butt_labels[2] ? $allbutts['2: ' . $butt_labels[2]] = 0 : $allbutts;
@@ -162,10 +162,10 @@ class ModalPopAnalysis extends ControllerBase {
       if (count($data) > 0) {
         foreach ($data as $key => $value) {
           // Specify the button.
-          $buttID = "field_pop_butt" . $value['whichbutt'] . "_label";
+          $buttID = "field_pop_butt" . $value['whichbutt'];
 
           // Overall total so far.
-          $total[$value['whichbutt'] . ": " . $node->get($buttID)->getString()]++;
+          $total[$value['whichbutt'] . ": " . $node->get($buttID)->getValue()[0]['title']]++;
 
           // Monthly total.
           // If it's a new month...
@@ -173,7 +173,7 @@ class ModalPopAnalysis extends ControllerBase {
             // Populate this month with button placeholders.
             $total_monthly[$value['month']] = $allbutts;
           }
-          $total_monthly[$value['month']][$value['whichbutt'] . ": " . $node->get($buttID)->getString()]++;
+          $total_monthly[$value['month']][$value['whichbutt'] . ": " . $node->get($buttID)->getValue()[0]['title']]++;
           $prevmonth = $value['month'];
 
           // Daily total.
@@ -182,7 +182,7 @@ class ModalPopAnalysis extends ControllerBase {
             // Populate this month with button placeholders.
             $total_daily[$value['day']] = $allbutts;
           }
-          $total_daily[$value['day']][$value['whichbutt'] . ": " . $node->get($buttID)->getString()]++;
+          $total_daily[$value['day']][$value['whichbutt'] . ": " . $node->get($buttID)->getValue()[0]['title']]++;
           $prevday = $value['day'];
 
         }

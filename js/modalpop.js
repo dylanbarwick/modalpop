@@ -4,10 +4,11 @@
   Drupal.behaviors.mpsettings = {
     attach: function (context, settings) {
       ////////////////////////////////////////
+      console.log(typeof drupalSettings.modalpop);
 
       let bodtell = '';
       // Only show this if we're passing any settings to it.
-      if (typeof drupalSettings.modalpop.mpvalues !== 'undefined') {
+      if (typeof drupalSettings.modalpop !== 'undefined') {
         let mpvalues = drupalSettings.modalpop.mpvalues;
 
         $.each(mpvalues, function(key, value) {

@@ -33,7 +33,7 @@
         </div>
       </div>
       {% for i in range(1,3) %}
-        {% if day[i]['percent'] != '0' %}
+        {% if day[i] and day[i]['percent'] != '0' %}
           <div class='day_bar option_{{ i }}' style='width:{{ day[i]['demipercent'] }}%;'>{{ day[i]['percent'] }}%</div>
         {% endif %}
       {% endfor %}
