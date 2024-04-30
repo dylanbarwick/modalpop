@@ -10,6 +10,7 @@ dependencies:
     - field.field.node.modalpop.field_pop_butt3
     - field.field.node.modalpop.field_pop_butt3_expiry
     - field.field.node.modalpop.field_pop_overlay_opacity
+    - field.field.node.modalpop.field_pop_view_mode
     - field.field.node.modalpop.field_popstart
     - field.field.node.modalpop.field_popstop
     - field.field.node.modalpop.field_template_key
@@ -17,6 +18,7 @@ dependencies:
     - node.type.modalpop
   module:
     - link
+    - options
     - text
     - user
   enforced:
@@ -44,7 +46,7 @@ content:
       rel: ''
       target: ''
     third_party_settings: {  }
-    weight: 12
+    weight: 11
     region: content
   field_pop_butt1_expiry:
     type: string
@@ -64,7 +66,7 @@ content:
       rel: ''
       target: ''
     third_party_settings: {  }
-    weight: 13
+    weight: 12
     region: content
   field_pop_butt2_expiry:
     type: string
@@ -72,7 +74,7 @@ content:
     settings:
       link_to_entity: false
     third_party_settings: {  }
-    weight: 6
+    weight: 5
     region: content
   field_pop_butt3:
     type: link
@@ -84,7 +86,7 @@ content:
       rel: ''
       target: ''
     third_party_settings: {  }
-    weight: 14
+    weight: 13
     region: content
   field_pop_butt3_expiry:
     type: string
@@ -92,7 +94,22 @@ content:
     settings:
       link_to_entity: false
     third_party_settings: {  }
-    weight: 9
+    weight: 8
+    region: content
+  field_pop_view_mode:
+    type: list_default
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 16
+    region: content
+  field_template_key:
+    type: string
+    label: hidden
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 14
     region: content
   links:
     settings: {  }
@@ -103,5 +120,4 @@ hidden:
   field_pop_overlay_opacity: true
   field_popstart: true
   field_popstop: true
-  field_template_key: true
   field_whichpath: true

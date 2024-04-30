@@ -10,6 +10,7 @@ dependencies:
     - field.field.node.modalpop.field_pop_butt3
     - field.field.node.modalpop.field_pop_butt3_expiry
     - field.field.node.modalpop.field_pop_overlay_opacity
+    - field.field.node.modalpop.field_pop_view_mode
     - field.field.node.modalpop.field_popstart
     - field.field.node.modalpop.field_popstop
     - field.field.node.modalpop.field_template_key
@@ -95,6 +96,12 @@ content:
   field_pop_overlay_opacity:
     type: options_select
     weight: 23
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  field_pop_view_mode:
+    type: options_select
+    weight: 27
     region: content
     settings: {  }
     third_party_settings: {  }

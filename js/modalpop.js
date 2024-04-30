@@ -4,41 +4,45 @@
   Drupal.behaviors.mpsettings = {
     attach: function (context, settings) {
       ////////////////////////////////////////
-      console.log("I'm alive!!");
 
       let bodtell = '';
       // Only show this if we're passing any settings to it.
-      if (typeof drupalSettings.modalpop !== 'undefined') {
-        let mpnid = drupalSettings.modalpop.mpvalues.mpnid;
-        let overlay_opacity = (drupalSettings.modalpop.mpvalues.overlay_opacity / 100);
-        let user_uid = drupalSettings.modalpop.mpvalues.uid;
-        let mptime = drupalSettings.modalpop.mpvalues.mptime;
-        let cookie_name = 'block_popup_' + mpnid;
-        let thistarget = '_self';
-        const myCookieValue = Cookies.get(cookie_name);
+      if (typeof drupalSettings.modalpop.mpvalues !== 'undefined') {
+        let mpvalues = drupalSettings.modalpop.mpvalues;
 
-        if(typeof mpnid != "undefined" && !myCookieValue){
-          $('#modalpop-overlay').css('opacity', overlay_opacity).fadeIn();
-          $('.modalpop-container#mpc' + mpnid).fadeIn();
-        }
+        $.each(mpvalues, function(key, value) {
+          if (typeof Cookies.get('block_popup_' + key) == 'undefined') {
+            let mpnid = key;
+            let overlay_opacity = (value.overlay_opacity / 100);
+            let user_uid = value.uid;
+            let mptime = value.mptime;
+            let cookie_name = 'block_popup_' + key;
+            let thistarget = '_self';
+            const myCookieValue = Cookies.get(cookie_name);
+            $('#modalpop-overlay-' + key).css('opacity', overlay_opacity).fadeIn();
+            $('.modalpop-container#mpc' + key).fadeIn();
 
-        $('.modalpop-button a').one('click', function(e){
-          if(e.handled !== true) {
-            let thisalt = $(this).attr('alt');
-            let cookie_days = Number($(this).attr('rel'));
-            if (typeof $(this).attr('target') != 'undefined') {
-              thistarget = $(this).attr('target');
-            }
-            logclick($(this).attr('href'), thistarget, drupalSettings.path.baseUrl + 'modalpopstore', { 'nid': mpnid, 'uid': user_uid, 'whichbutt': thisalt, 'whichdate': mptime });
-            // $.cookie(cookie_name, thisalt, {expires: cookie_days});
-            Cookies.set(cookie_name, thisalt, { expires: cookie_days});
-            $('#modalpop-overlay').css('opacity', overlay_opacity).fadeOut();
-            $('.modalpop-container#mpc' + mpnid).fadeOut();
-            e.handled = true;
+            $('.modalpop-button a').one('click', function(e){
+              if(e.handled !== true) {
+                let thisalt = $(this).attr('alt');
+                let cookie_days = Number($(this).attr('rel'));
+                if (typeof $(this).attr('target') != 'undefined') {
+                  thistarget = $(this).attr('target');
+                }
+                logclick($(this).attr('href'), thistarget, drupalSettings.path.baseUrl + 'modalpopstore', { 'nid': mpnid, 'uid': user_uid, 'whichbutt': thisalt, 'whichdate': mptime });
+                Cookies.set(cookie_name, thisalt, { expires: cookie_days});
+                $('#modalpop-overlay-' + key).css('opacity', overlay_opacity).fadeOut();
+                $('.modalpop-container#mpc' + key).fadeOut();
+                e.handled = true;
+              }
+
+              e.preventDefault();
+            });
+
+            return false;
           }
-
-          e.preventDefault();
         });
+        
       }
 
       $('.bodswitch').on('mouseup', function(e){

@@ -12,6 +12,8 @@ use Drupal\node\NodeInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Access\AccessResult;
 use Drupal\menu_test\Access\AccessCheck;
+use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\field\Entity\FieldStorageConfig;
 
 /**
  * @defgroup modalpop Example: Config Node Type
@@ -105,21 +107,9 @@ function modalpop_form_alter(&$form, FormStateInterface $form_state, $form_id) {
     $form['field_pop_butt3_expiry']['widget'][0]['value']['#default_value'] = $default_expiry;
     $form['butt3']['field_pop_butt3_expiry'] = $form['field_pop_butt3_expiry'];
     unset($form['field_pop_butt3_expiry']);
+
   }
 
-}
-
-/**
- * Implements hook_theme_suggestions_hook().
- */
-function modalpop_theme_suggestions_node(array $variables) {
-  $return = _modalpop_get_template_keys();
-  if (count($return) > 0 && isset($return['prefixed'])) {
-    return $return['prefixed'];
-  }
-  else {
-    return [];
-  }
 }
 
 /**
@@ -139,20 +129,6 @@ function modalpop_theme($existing, $type, $theme, $path) {
     ],
   ];
 
-  $more_keys = _modalpop_get_template_keys();
-  \Drupal::logger('modalpop_more_keys')->info('<pre>' . print_r($more_keys, TRUE) . '</pre>');
-
-  if (!empty($more_keys['prefixed'])) {
-    $config = Drupal::config('modalpop.modalpopsettings');
-    $custom_template_directory = $config->get('modalpop_custom_template_directory', []);
-    foreach ($more_keys['prefixed'] as $key => $template_key) {
-      $template_key_updated = str_replace('_', '-', $template_key);
-      if (file_exists($custom_template_directory . $template_key_updated . '.html.twig')) {
-        $return[$template_key] = ['base hook' => 'node'];
-      }
-    }
-  }
-
   return $return;
 }
 
@@ -162,7 +138,7 @@ function modalpop_theme($existing, $type, $theme, $path) {
 function modalpop_page_bottom(array &$page_bottom) {
 
   $match = 0;
-  $nid = FALSE;
+  $nids = [];
   global $base_path;
   $is_front_page = Drupal::service('path.matcher')->isFrontPage();
   $user = User::load(Drupal::currentUser()->id());
@@ -178,7 +154,6 @@ function modalpop_page_bottom(array &$page_bottom) {
     // Step through each node and compare its paths with current path.
     foreach ($nodes as $node) {
       $whichpage = explode("\r\n", $node->get('field_whichpath')->getString());
-      \Drupal::logger('modalpop_tell')->info(print_r($whichpage, TRUE));
       if (count($whichpage) > 0) {
         foreach ($whichpage as $thispath) {
           trim($thispath);
@@ -199,35 +174,35 @@ function modalpop_page_bottom(array &$page_bottom) {
           // only one pop-up appears per page.
           if ($match == 1 || ($is_front_page && $thispath == "<front>")) {
             $match = 1;
-            $nid = $node->id();
-            break 2;
+            $matching_nids[] = $node->id();
           }
         }
       }
     }
 
-    if ($match && $nid) {
-      // $view_mode = 'default';
+    if (count($matching_nids)) {
       $renderer = Drupal::service('renderer');
       $view_builder = \Drupal::entityTypeManager()->getViewBuilder('node');
-      $node = Node::load($nid);
-      $view_mode = $node->get('field_template_key')->value;
-      if (empty($view_mode)) {
-        $view_mode = 'default';
+      foreach ($matching_nids as $key => $matching_nid) {
+        // Render them all and let js delete those that have been dismissed.
+        $node = Node::load($matching_nid);
+        $view_mode = $node->get('field_pop_view_mode')->value;
+        if (empty($view_mode)) {
+          $view_mode = 'default';
+        }
+        $build = $view_builder->view($node, $view_mode);
+        $output = $renderer->renderRoot($build);
+        $modalpop_settings[$matching_nid] = [
+          'mpnid' => $matching_nid,
+          'overlay_opacity' => $node->get('field_pop_overlay_opacity')->getString(),
+          'uid' => $user->id(),
+          'mptime' => time(),
+        ];
+        $page_bottom['modalpop'][$matching_nid]['#markup'] = $output;
+        $page_bottom['modalpop'][$matching_nid]['#attached']['drupalSettings']['modalpop']['mpvalues'][$matching_nid] = $modalpop_settings[$matching_nid];
       }
-      $build = $view_builder->view($node, $view_mode);
-      $output = $renderer->renderRoot($build);
-      $modalpop_settings = [
-        'mpnid' => $nid,
-        'overlay_opacity' => $node->get('field_pop_overlay_opacity')->getString(),
-        'uid' => $user->id(),
-        'mptime' => time(),
-      ];
-      $page_bottom['modalpop']['#markup'] = $output;
       $page_bottom['modalpop']['#attached']['library'][] = 'modalpop/modalpop-styles';
       $page_bottom['modalpop']['#attached']['library'][] = 'modalpop/modalpop-scripts';
-      $page_bottom['modalpop']['#attached']['drupalSettings']['modalpop']['mpvalues'] = $modalpop_settings;
-
     }
 
   }
@@ -244,7 +219,6 @@ function modalpop_node_access(NodeInterface $node, $op, AccountInterface $accoun
       if (!$user->hasPermission('access popup node view') && $node->gettype() == 'modalpop') {
         return AccessResult::forbidden()->cachePerPermissions();
       }
-
       break;
 
     default:
@@ -285,4 +259,40 @@ function _modalpop_get_template_keys() {
     }
   }
   return $return;
+}
+
+/**
+ * Set dynamic allowed values for the view mode field.
+ *
+ * @param \Drupal\field\Entity\FieldStorageConfig $definition
+ *   The field definition.
+ * @param \Drupal\Core\Entity\ContentEntityInterface|null $entity
+ *   The entity being created if applicable.
+ * @param bool $cacheable
+ *   Boolean indicating if the results are cacheable.
+ *
+ * @return array
+ *   An array of possible key and value options.
+ *
+ * @see options_allowed_values()
+ */
+function _modalpop_get_relevant_view_modes(FieldStorageConfig $definition, ContentEntityInterface $entity = NULL, $cacheable) {
+  // Getting all display modes configured for nodes with content type article
+  $view_modes = \Drupal::service('entity_display.repository')
+    ->getViewModeOptionsByBundle('node', 'modalpop');
+  $form['view_modes'] = [
+    '#markup' => '<pre>' . print_r($view_modes, TRUE) . '</pre>',
+  ];
+  unset($view_modes['default']);
+  
+  
+  $options = [
+    'default' => 'Default',
+  ];
+  // Add any view modes enabled for modalpop nodes.
+  if ($entity->bundle() == 'modalpop') {
+    $options = array_merge($options, $view_modes);
+  }
+
+  return $options;
 }
