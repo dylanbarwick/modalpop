@@ -154,6 +154,21 @@ class ModalPopAnalysis extends ControllerBase {
       $prevday = 0;
 
       $mpbuild = [];
+
+      $linkback = Link::createFromRoute(
+        'Modalpop analysis',
+        "modalpop.modal_pop_analysis",
+        [],
+        [
+          "attributes" => [
+            "class" => "modalpop-linkback",
+          ],
+        ]
+      )->toRenderable();
+
+      $mpbuild['linkback'] = [
+        '#markup' => $renderer->renderRoot($linkback),
+      ];
       $mpbuild['overall'] = [
         '#theme' => 'modalpop_monthly',
       ];
