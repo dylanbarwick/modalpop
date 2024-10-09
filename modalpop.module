@@ -66,7 +66,6 @@ function modalpop_form_alter(&$form, FormStateInterface $form_state, $form_id) {
     $form['butt1'] = [
       '#type' => 'details',
       '#title' => t('Popup button 1'),
-      '#description' => t('Lorem ipsum.'),
       '#open' => FALSE,
       '#weight' => 10,
     ];
@@ -81,7 +80,6 @@ function modalpop_form_alter(&$form, FormStateInterface $form_state, $form_id) {
     $form['butt2'] = [
       '#type' => 'details',
       '#title' => t('Popup button 2'),
-      '#description' => t('Lorem ipsum.'),
       '#open' => FALSE,
       '#weight' => 12,
     ];
@@ -96,7 +94,6 @@ function modalpop_form_alter(&$form, FormStateInterface $form_state, $form_id) {
     $form['butt3'] = [
       '#type' => 'details',
       '#title' => t('Popup button 3'),
-      '#description' => t('Lorem ipsum.'),
       '#open' => FALSE,
       '#weight' => 14,
     ];
@@ -284,8 +281,8 @@ function _modalpop_get_relevant_view_modes(FieldStorageConfig $definition, Conte
     '#markup' => '<pre>' . print_r($view_modes, TRUE) . '</pre>',
   ];
   unset($view_modes['default']);
-  
-  
+
+
   $options = [
     'default' => 'Default',
   ];
