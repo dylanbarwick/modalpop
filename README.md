@@ -23,13 +23,27 @@ hook_theme_suggestions_hook_alter(). It should look like this:
 /**
  * Implements hook_theme_suggestions_hook_alter().
  */
-function d10theme_theme_suggestions_node_alter(array &$suggestions, array $variables) {
+function YOURTHEME_theme_suggestions_node_alter(array &$suggestions, array $variables) {
   // Extract the node object from $variables.
   $node = $variables['elements']['#node'];
-  // If we have a node of type `modalpop` and the template key has a value.
-  if ($node->getType() == 'modalpop' && !empty($node->get('field_template_key')->value)) {
-    $field_template_key = $node->get('field_template_key')->value;
-    $suggestions[] = 'node__modalpop_' . $field_template_key;
+  $field_template_key = '';
+  $field_pop_view_mode = '';
+  // If we have a node of type `modalpop`...
+  if ($node->getType() == 'modalpop') {
+    // If we have a template key value...
+    if (!empty($node->get('field_template_key')->value)) {
+      $field_template_key = $node->get('field_template_key')->value;
+      $suggestions[] = 'node__modalpop__' . $field_template_key;
+    }
+    // If we have a pop-up view mode value...
+    if (!empty($node->get('field_pop_view_mode')->value)) {
+      $field_pop_view_mode = $node->get('field_pop_view_mode')->value;
+      $suggestions[] = 'node__modalpop__' . $field_pop_view_mode;
+    }
+    // If we have both...
+    if (!empty($field_template_key) && !empty($field_pop_view_mode)) {
+      $suggestions[] = 'node__modalpop__' . $field_pop_view_mode . '__' . $field_template_key;
+    }
   }
 }
 
