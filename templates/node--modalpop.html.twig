@@ -82,8 +82,8 @@
 {% set this_id = 'mpc' ~ node.id %}
 {% set button_attributes = create_attribute() %}
 {% set default_expiry = 14 %}
-<div id='modalpop-overlay-{{ node.id }}' class='modalpop-overlay' data-modalpop-nid='{{ node.id }}'></div>
-<div{{ attributes.addClass(classes).setAttribute('id', this_id).setAttribute('data-modalpop-nid', node.id) }}>
+<div id='modalpop-overlay-{{ node.id }}' class='modalpop-overlay' data-modalpop-nid='{{ node.id }}' style='display: none;'></div>
+<div{{ attributes.addClass(classes).setAttribute('id', this_id).setAttribute('data-modalpop-nid', node.id) }}  style='display: none;'>
 
   <div{{ content_attributes.addClass('node__content', 'modalpop-content-container') }}>
     {{ content.body }}

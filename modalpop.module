@@ -147,6 +147,7 @@ function modalpop_page_bottom(array &$page_bottom) {
       ->accessCheck(TRUE)
       ->execute();
     $nodes = Node::loadMultiple($nids);
+    $matching_nids = [];
 
     // Step through each node and compare its paths with current path.
     foreach ($nodes as $node) {

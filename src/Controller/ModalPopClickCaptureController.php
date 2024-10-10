@@ -51,6 +51,7 @@ class ModalPopClickCaptureController extends ControllerBase {
    */
   public function getClickCapture() {
     $data_payload = Drupal::request()->getContent();
+    $data_decoded = [];
 
     foreach (explode('&', $data_payload) as $chunk) {
       $param = explode("=", $chunk);
@@ -61,7 +62,6 @@ class ModalPopClickCaptureController extends ControllerBase {
 
     $return = $this->setClickCapture($data_decoded);
 
-    Drupal::logger("modalpop")->info('<pre>' . print_r($return, TRUE) . '</pre>');
     return [
       '#markup' => $return,
     ];

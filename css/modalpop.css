@@ -141,7 +141,7 @@
 }
 
 .data {
-  width: 70%;
+  width: 0;
   float: left;
   display: inline;
   background-color: #cccccc;

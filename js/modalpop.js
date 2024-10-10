@@ -4,7 +4,6 @@
   Drupal.behaviors.mpsettings = {
     attach: function (context, settings) {
       ////////////////////////////////////////
-      console.log(typeof drupalSettings.modalpop);
 
       let bodtell = '';
       // Only show this if we're passing any settings to it.
@@ -12,7 +11,11 @@
         let mpvalues = drupalSettings.modalpop.mpvalues;
 
         $.each(mpvalues, function(key, value) {
+          // console.log('key: ' + key + ' value: ' + value);
+          // console.log(typeof Cookies.get('block_popup_' + key));
+          // console.log(Cookies.get('block_popup_' + key));
           if (typeof Cookies.get('block_popup_' + key) == 'undefined') {
+            $('#modalpop-overlay-' + key, '.modalpop-container#mpc' + key).removeAttr('style');
             let mpnid = key;
             let overlay_opacity = (value.overlay_opacity / 100);
             let user_uid = value.uid;
@@ -30,8 +33,26 @@
                 if (typeof $(this).attr('target') != 'undefined') {
                   thistarget = $(this).attr('target');
                 }
-                logclick($(this).attr('href'), thistarget, drupalSettings.path.baseUrl + 'modalpopstore', { 'nid': mpnid, 'uid': user_uid, 'whichbutt': thisalt, 'whichdate': mptime });
-                Cookies.set(cookie_name, thisalt, { expires: cookie_days});
+                logclick(
+                  $(this).attr('href'),
+                  thistarget,
+                  drupalSettings.path.baseUrl + 'modalpopstore',
+                  {
+                    'nid': mpnid,
+                    'uid': user_uid,
+                    'whichbutt': thisalt,
+                    'whichdate': mptime,
+                  }
+                );
+                Cookies.set(
+                  cookie_name,
+                  thisalt,
+                  {
+                    expires: cookie_days,
+                    secure: true, // ensure cookie is sent over HTTPS
+                    samesite: 'None', // ensure cookie is sent on cross-origin requests
+                  }
+                );
                 $('#modalpop-overlay-' + key).css('opacity', overlay_opacity).fadeOut();
                 $('.modalpop-container#mpc' + key).fadeOut();
                 e.handled = true;
@@ -43,7 +64,7 @@
             return false;
           }
         });
-        
+
       }
 
       $('.bodswitch').on('mouseup', function(e){
