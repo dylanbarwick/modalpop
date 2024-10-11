@@ -73,7 +73,9 @@ function modalpop_form_alter(&$form, FormStateInterface $form_state, $form_id) {
     $form['butt1']['field_pop_butt1'] = $form['field_pop_butt1'];
     unset($form['field_pop_butt1']);
 
-    $form['field_pop_butt1_expiry']['widget'][0]['value']['#default_value'] = $default_expiry;
+    if (empty($form['field_pop_butt1_expiry'])) {
+      $form['field_pop_butt1_expiry']['widget'][0]['value']['#default_value'] = $default_expiry;
+    }
     $form['butt1']['field_pop_butt1_expiry'] = $form['field_pop_butt1_expiry'];
     unset($form['field_pop_butt1_expiry']);
 
@@ -87,7 +89,9 @@ function modalpop_form_alter(&$form, FormStateInterface $form_state, $form_id) {
     $form['butt2']['field_pop_butt2'] = $form['field_pop_butt2'];
     unset($form['field_pop_butt2']);
 
-    $form['field_pop_butt2_expiry']['widget'][0]['value']['#default_value'] = $default_expiry;
+    if (empty($form['field_pop_butt2_expiry'])) {
+      $form['field_pop_butt2_expiry']['widget'][0]['value']['#default_value'] = $default_expiry;
+    }
     $form['butt2']['field_pop_butt2_expiry'] = $form['field_pop_butt2_expiry'];
     unset($form['field_pop_butt2_expiry']);
 
@@ -101,7 +105,9 @@ function modalpop_form_alter(&$form, FormStateInterface $form_state, $form_id) {
     $form['butt3']['field_pop_butt3'] = $form['field_pop_butt3'];
     unset($form['field_pop_butt3']);
 
-    $form['field_pop_butt3_expiry']['widget'][0]['value']['#default_value'] = $default_expiry;
+    if (empty($form['field_pop_butt3_expiry'])) {
+      $form['field_pop_butt3_expiry']['widget'][0]['value']['#default_value'] = $default_expiry;
+    }
     $form['butt3']['field_pop_butt3_expiry'] = $form['field_pop_butt3_expiry'];
     unset($form['field_pop_butt3_expiry']);
 
