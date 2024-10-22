@@ -3,6 +3,7 @@ status: true
 dependencies:
   config:
     - field.field.node.modalpop.body
+    - field.field.node.modalpop.field_feed
     - field.field.node.modalpop.field_pop_butt1
     - field.field.node.modalpop.field_pop_butt1_expiry
     - field.field.node.modalpop.field_pop_butt2
@@ -35,6 +36,14 @@ content:
     settings: {  }
     third_party_settings: {  }
     weight: 1
+    region: content
+  field_feed:
+    type: string
+    label: above
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 17
     region: content
   field_pop_butt1:
     type: link
@@ -121,3 +130,4 @@ hidden:
   field_popstart: true
   field_popstop: true
   field_whichpath: true
+  langcode: true

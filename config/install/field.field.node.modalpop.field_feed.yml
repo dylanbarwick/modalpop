@@ -1,0 +1,18 @@
+langcode: en-gb
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_feed
+    - node.type.modalpop
+id: node.modalpop.field_feed
+field_name: field_feed
+entity_type: node
+bundle: modalpop
+label: Feed
+description: 'The URL or path of a feed that will deliver a short, sharp snippet of text. Something like a thought for the day or an insprational quote. If there is a value in this field then it will over-rule the "Body" field above.'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string
