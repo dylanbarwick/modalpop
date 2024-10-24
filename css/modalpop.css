@@ -14,17 +14,27 @@
   color: #000000;
   padding: 1em;
   position: fixed;
-  top: 30%;
-  left: 30%;
-  width: 530px;
+  top: 10%;
+  left: 5%;
+  width: 90%;
+  height: auto;
   display: none;
-  z-index:1000
+  z-index:1000;
+}
+
+@media screen and (min-width: 600px) {
+  .modalpop-container {
+    top: 30%;
+    left: 15%;
+    width: 70%;
+  }
 }
 
 .modalpop-content-container {
   float: left;
   width: 70%;
   margin-right: 10px;
+  overflow-y: auto;
 }
 
 .modalpop-buttons-container {
